@@ -104,7 +104,7 @@ EMAIL_HOST = os.environ.get('MAIL_SERVER', 'smtp.zoho.com.cn')
 EMAIL_PORT = int(os.environ.get('MAIL_PORT', 465))
 EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('MAIL_USERNAME', 'ax2437525578@zohomail.cn')
-EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '9c0zjQw89xaj')
+EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('MAIL_DEFAULT_SENDER', 'ax2437525578@zohomail.cn')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -125,4 +125,5 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
+
 MEDIA_ROOT = BASE_DIR / 'media'
