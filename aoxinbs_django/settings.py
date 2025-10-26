@@ -97,7 +97,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 # EMAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
 # EMAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
 # EMAIL_HOST_USER = os.environ.get('MAIL_USERNAME', 'qjlgghenshuai@gmail.com')
-# EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', 'ysdg eapx evwc xmgj')
+# EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 # DEFAULT_FROM_EMAIL = os.environ.get('MAIL_DEFAULT_SENDER', 'qjlgghenshuai@gmail.com')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('MAIL_SERVER', 'smtp.zoho.com.cn')
@@ -127,3 +127,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+
