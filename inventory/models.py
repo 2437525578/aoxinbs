@@ -12,7 +12,6 @@ class InventoryItem(models.Model):
     expiry_date = models.DateField(blank=True, null=True, verbose_name="有效期至")
     added_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='added_inventory', verbose_name="添加人")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="最后更新")
-    # unique_id = models.CharField(max_length=100, unique=True, blank=True, null=True, verbose_name="唯一标识码") # 可选：如二维码/条形码
 
     class Meta:
         verbose_name = "库存条目"

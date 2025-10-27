@@ -174,3 +174,8 @@ class PasswordResetConfirmView(APIView):
             # 令牌无效或已过期 (Django 的 check_token 会处理过期)
             return Response({"code": 400, "message": "重置链接无效或已过期"}, status=status.HTTP_400_BAD_REQUEST)
 # --- ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ---
+class UserProfileView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserRegisterSerializer
+    def get_object(self):
+        return self.request.user

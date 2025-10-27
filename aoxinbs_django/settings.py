@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -73,7 +73,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'aoxinbs_django.wsgi.application'
 
 
-# 迁移数据库配置 (Flask 的 SQLALCHEMY_DATABASE_URI)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -97,26 +96,26 @@ AUTH_USER_MODEL = 'users.CustomUser'
 # EMAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
 # EMAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
 # EMAIL_HOST_USER = os.environ.get('MAIL_USERNAME', 'qjlgghenshuai@gmail.com')
-# EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+# EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', 'ysdg eapx evwc xmgj')
 # DEFAULT_FROM_EMAIL = os.environ.get('MAIL_DEFAULT_SENDER', 'qjlgghenshuai@gmail.com')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('MAIL_SERVER', 'smtp.zoho.com.cn')
 EMAIL_PORT = int(os.environ.get('MAIL_PORT', 465))
 EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('MAIL_USERNAME', 'ax2437525578@zohomail.cn')
-EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '9c0zjQw89xaj')
 DEFAULT_FROM_EMAIL = os.environ.get('MAIL_DEFAULT_SENDER', 'ax2437525578@zohomail.cn')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-         # 默认允许任何人访问，我们在每个视图(View)中单独控制权限
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 
-# ... (其他 Django 默认设置)
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -125,6 +124,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
-
 MEDIA_ROOT = BASE_DIR / 'media'
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=8),
+
+}
