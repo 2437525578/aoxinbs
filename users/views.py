@@ -1,4 +1,3 @@
-# F:\aoxinbs_django\users\views.py
 
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
@@ -19,11 +18,50 @@ from django.conf import settings
 from django.utils.encoding import force_str, force_bytes  # <-- 1. 导入 Django 工具
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode  # <-- 1. 导入 Django 工具
 from django.contrib.auth.tokens import default_token_generator  # <-- 2. 导入 Django 的 token 生成器
+from django.core.cache import cache  # 导入 cache 模块
 
 
 # from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature # <-- 3. 移除 itsdangerous
 
 # --- UserLoginView, UserRegisterView, ChangePasswordView 保持不变 ---
+class VerificationCodeView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        if not email:
+            return Response({"code": 400, "message": "缺少邮箱地址"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 检查邮箱格式
+        if not CustomUser.objects.filter(email=email).exists():
+            # 这里可以根据需求决定是否在发送验证码时就检查用户是否存在
+            # 目前为了安全，即使邮箱不存在也返回成功，避免暴露用户信息
+            pass
+
+        # 生成随机验证码
+        import random
+        verification_code = ''.join(random.choices('0123456789', k=6))
+
+        # 存储验证码到缓存，例如 5 分钟过期
+        cache.set(f'verification_code:{email}', verification_code, 300)  # 300 秒 = 5 分钟
+
+        # 发送邮件
+        subject = "您的验证码"
+        message = f"您的验证码是：{verification_code}，5分钟内有效。"
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return Response({"code": 200, "message": "验证码已发送至您的邮箱"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"DEBUG: Failed to send verification code email: {e}")
+            return Response({"code": 500, "message": "发送验证码邮件失败"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class UserLoginView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = MyTokenObtainPairSerializer
@@ -43,6 +81,20 @@ class UserRegisterView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
 
     def create(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        captcha = request.data.get('captcha')
+
+        if not email or not captcha:
+            return Response({"code": 400, "message": "缺少邮箱或验证码"}, status=status.HTTP_400_BAD_REQUEST)
+
+        stored_captcha = cache.get(f'verification_code:{email}')
+
+        if not stored_captcha or stored_captcha != captcha:
+            return Response({"code": 400, "message": "验证码错误或已过期"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 验证码正确，可以删除缓存中的验证码
+        cache.delete(f'verification_code:{email}')
+
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -173,9 +225,40 @@ class PasswordResetConfirmView(APIView):
         else:
             # 令牌无效或已过期 (Django 的 check_token 会处理过期)
             return Response({"code": 400, "message": "重置链接无效或已过期"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 # --- ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ---
 class UserProfileView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserRegisterSerializer
+
     def get_object(self):
         return self.request.user
+
+
+class CheckUsernameView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        if not username:
+            return Response({"code": 400, "message": "缺少用户名"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if CustomUser.objects.filter(username=username).exists():
+            return Response({"code": 409, "message": "用户名已存在"}, status=status.HTTP_409_CONFLICT)
+        else:
+            return Response({"code": 200, "message": "用户名可用"}, status=status.HTTP_200_OK)
+
+
+class CheckEmailView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        if not email:
+            return Response({"code": 400, "message": "缺少邮箱"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if CustomUser.objects.filter(email=email).exists():
+            return Response({"code": 409, "message": "邮箱已存在"}, status=status.HTTP_409_CONFLICT)
+        else:
+            return Response({"code": 200, "message": "邮箱可用"}, status=status.HTTP_200_OK)
